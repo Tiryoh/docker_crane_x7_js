@@ -129,6 +129,10 @@ io.on('connection', function(socket){
     });
 });
 
+process.on('SIGINT', function() {
+    process.exit();
+});
+
 var ip_port = getLocalAddress().ipv4;
 http.listen(8080,ip_port, function(){
     console.log('port * : 8080');
