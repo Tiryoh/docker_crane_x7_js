@@ -1,0 +1,50 @@
+name: Build and Test Docker Image
+
+on: [push]
+
+jobs:
+  trivy:
+    name: Trivy Scan Vulnerability
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@master
+      - name: Build docker image
+        run:
+          docker build -t ${IMAGE_NAME} . --file Dockerfile
+        env:
+          IMAGE_NAME: app
+      - name: Install trivy
+        run: |
+          sudo apt-get install apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy
+      - name: Vulnerability Scan with Trivy
+        run: trivy --only-update alpine -q --severity HIGH,CRITICAL --exit-code 1 ${IMAGE_NAME}
+        env:
+          IMAGE_NAME: app
+
+  dockle:
+    name: Dockle
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@master
+      - name: Build docker image
+        run: docker build -t ${IMAGE_NAME} . --file Dockerfile
+        env:
+          IMAGE_NAME: app
+      - name: Install dockle
+        run: |
+          VERSION=$(curl --silent "https://api.github.com/repos/goodwithtech/dockle/releases/latest" | \
+          grep '"tag_name":' | \
+          sed -E 's/.*"v([^"]+)".*/\1/' \
+          )
+          curl -L -o dockle.deb https://github.com/goodwithtech/dockle/releases/download/v${VERSION}/dockle_${VERSION}_Linux-64bit.deb
+          sudo dpkg -i dockle.deb
+          rm dockle.deb
+      - name: Check image with dockle
+        run: dockle ${IMAGE_NAME}
+        env:
+          IMAGE_NAME: app
+
