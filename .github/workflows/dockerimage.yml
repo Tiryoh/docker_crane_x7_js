@@ -60,7 +60,7 @@ jobs:
       - name: Build docker image
         run: docker build -t ${IMAGE_NAME} . --file Dockerfile
         env:
-          IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/app:latest
+          IMAGE_NAME: docker.pkg.github.com/tiryoh/docker_crane_x7_js/app:latest
       - name: Login to GitHub Package Registry
         run: docker login docker.pkg.github.com -u Tiryoh -p ${GITHUB_TOKEN}
         env:
@@ -68,4 +68,4 @@ jobs:
       - name: Push the Docker image to GitHub Package Registry
         run: docker push ${IMAGE_NAME}
         env:
-          IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/app:latest
+          IMAGE_NAME: docker.pkg.github.com/tiryoh/docker_crane_x7_js/app:latest
