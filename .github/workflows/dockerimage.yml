@@ -1,6 +1,9 @@
 name: Build and Test Docker Image
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   trivy:
@@ -48,3 +51,21 @@ jobs:
         env:
           IMAGE_NAME: app
 
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-18.04
+    needs: [trivy, dockle]
+    steps:
+      - uses: actions/checkout@master
+      - name: Build docker image
+        run: docker build -t ${IMAGE_NAME} . --file Dockerfile
+        env:
+          IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/app:latest
+      - name: Login to GitHub Package Registry
+        run: docker login docker.pkg.github.com -u Tiryoh -p ${GITHUB_TOKEN}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_TO_PUSH_TO_PACKAGE_REGISTRY }}
+      - name: Push the Docker image to GitHub Package Registry
+        run: docker push ${IMAGE_NAME}
+        env:
+          IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/app:latest
