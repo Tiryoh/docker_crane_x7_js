@@ -1,4 +1,4 @@
-FROM node:10.16.3-stretch
+FROM node:10.18.1-stretch
 LABEL maintainer="Tiryoh <tiryoh@gmail.com>"
 WORKDIR /usr/src/app
 COPY ./CRANE_X7_JS/package*.json ./
